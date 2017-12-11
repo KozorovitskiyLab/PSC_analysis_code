@@ -1,0 +1,36 @@
+
+function [PSC_Amp, Decay] = PSC_Amp_Decay_Detection(Data,Stim_Time,Artifact_Time, PSC_Direction)
+
+    if(PSC_Direction == 1)  % outward current
+        for i = 1:length(Stim_Time)
+            PSC_Amp(:,i) = max(Data(i,Stim_Time(1) + Artifact_Time:Stim_Time(1) + 500));
+            plot(1:Pre_Stim, Data(i,Stim_Time(1) - Pre_Stim+1:Stim_Time(1)),'linewidth',1);
+            hold on
+            plot(Pre_Stim+Artifact_Time:Pre_Stim + Post_Stim, Data(i,Stim_Time(1) +Artifact_Time:Stim_Time(1) + 1000),'linewidth',1);
+            Temp = find(Data(i,Stim_Time(1) +Artifact_Time:Stim_Time(1) + 1000) == PSC_Amp_Trial(1,i),1);
+            PSC_Decay = Data(i,Stim_Time(1) + Artifact_Time + Temp:Stim_Time(1) + 1000);
+            Para_Temp_Fit2 = lsqcurvefit(@myfun_sPSC,[mean(PSC_Decay) 1 200],1:length(PSC_Decay), PSC_Decay);
+            Tau_Decay(1,i) = abs(Para_Temp_Fit2(3))/10;  %% decay time constant ms
+            set(gca,'fontsize',10);
+            set(gca,'XLim',[0,Pre_Stim + 1000]);
+            set(gca,'box','off');
+            set(gca,'XTick',0:100:Pre_Stim + 1000);
+            set(gca, 'Xticklabel',0:(Pre_Stim + 1000)/10);
+        end
+    else
+        PSC_Amp_Trial(1,i) = min(Data(i,Stim_Time(1) + Artifact_Time:Stim_Time(1) + 500));
+        plot(1:Pre_Stim, Data(i,Stim_Time(1) - Pre_Stim+1:Stim_Time(1)),'linewidth',1);
+        hold on
+        plot(Pre_Stim+Artifact_Time:Pre_Stim + 1000, Data(i,Stim_Time(1) +Artifact_Time:Stim_Time(1) + 1000),'linewidth',1);
+        Temp = find(Data(i,Stim_Time(1) +Artifact_Time:Stim_Time(1) + 1000) == PSC_Amp_Trial(1,i),1);
+        PSC_Decay = Data(i,Stim_Time(1) + Artifact_Time + Temp:Stim_Time(1) + 1000);
+%         Para_Temp_Fit2 = lsqcurvefit(@myfun_sPSC,[mean(PSC_Decay) 1 200],1:length(PSC_Decay), PSC_Decay);
+%         Tau_Decay(1,i) = abs(Para_Temp_Fit2(3))/10;  %% decay time constant ms
+        set(gca,'fontsize',10);
+        set(gca,'XLim',[0,Pre_Stim + 1000]);
+        set(gca,'XTick',0:100:Pre_Stim + 1000);
+        set(gca, 'Xticklabel',0:(Pre_Stim + 1000)/10);
+        set(gca,'box','off');
+%         set(gca,'YLim',[min(PSC_Response_Trial(:,i)),20]);
+        %         axis off
+    end
